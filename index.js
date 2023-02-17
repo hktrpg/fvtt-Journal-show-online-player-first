@@ -1,6 +1,6 @@
 
 Hooks.once("init", () => {
-    console.log("Show Online player First | Initializing");
+    console.log("Show Online player First 1.0 | Initializing");
 });
 
 Hooks.on('renderDialog', () => {
