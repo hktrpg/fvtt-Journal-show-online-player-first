@@ -1,37 +1,28 @@
 {
-  "id": "pokerole-babele-zh",
-  "title": "Pokerole Babele zh",
-  "description": "This module is the zh translation of the Pokerole system from Asocalips, approved by System Matters. Further information in the READ.ME. Module Babele is also needed for this module to function.",
-  "version": "3.0",
-  "compatibility": {
-      "minimum": "10",
-      "verified": "10.285"
+    "id": "fvtt-Journal-show-online-player-first",
+    "title": "Journel show online player first",
+    "description": "Tiny module. Show online player first in Journal.",
+    "version": "3.0",
+    "compatibility": {
+        "minimum": "10",
+        "verified": "10"
     },
-  "authors": [{
-      "name": "HKTRPG (based on Simone's module Babele and pokerole 中文翻譯 by 免費開源TRPG中文化團隊)",
-      "discord": "zzz#8939",
-      "flags": {}
-    }],
-  "esmodules": ["babele-register.js"],
-  "scripts": [],
-  "styles": [],
-  "packs": [],
-  "languages": [],
-  "system": ["pokerole"],
-  "relationships": {
-    "systems": [{
-        "id": "pokerole",
-        "type": "system",
-        "compatibility": {"verified": "0.2.0"}
-    }],
-    "modules": [{
-        "id": "babele",
-        "type": "module",
-        "compatibility": {"verified": "2.3.0"}
-    }]
-  },
-   
-  "url": "https://github.com/hktrpg/foundryvtt-pokerole-zh",
-  "manifest": "https://github.com/hktrpg/foundryvtt-pokerole-zh/raw/main/module.json",
-  "download": "https://github.com/hktrpg/foundryvtt-pokerole-zh/archive/refs/heads/main.zip"
+    "authors": [
+        {
+            "name": "HKTRPG",
+            "discord": "zzz#8939",
+            "flags": {}
+        }
+    ],
+    "esmodules": [],
+    "scripts": [
+        "./index.js"
+    ],
+    "styles": [],
+    "packs": [],
+    "languages": [],
+    "system": [],
+    "url": "https://github.com/hktrpg/fvtt-Journal-show-online-player-first",
+    "manifest": "https://github.com/hktrpg/fvtt-Journal-show-online-player-first/raw/main/module.json",
+    "download": "https://github.com/hktrpg/fvtt-Journal-show-online-player-first/archive/refs/heads/main.zip"
 }

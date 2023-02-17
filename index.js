@@ -1,8 +1,9 @@
-console.log('start2')
-Hooks.once('ready', () => {
-    console.log('ready translate')
-    const collection = new CollectionItem();
-    init()
+
+Hooks.on('renderApplication', (x, y, z) => {
+    console.log('Read')
+    console.log('x,y,z', x, y, z)
+    // const collection = new CollectionItem();
+    // init()
 });
 
 let flag = {
