@@ -1,9 +1,15 @@
 
-Hooks.on('renderApplication', (x, y, z) => {
-    console.log('Read')
-    console.log('x,y,z', x, y, z)
-    // const collection = new CollectionItem();
-    // init()
+Hooks.once("init", () => {
+    console.log("Show Online player First | Initializing my module");
+});
+
+Hooks.on('renderDialog', (dialog, html) => {
+    console.log(dialog.data.title)
+    let innerHTML = html.find(`div.form-group-stacked`);
+    if (innerHTML.length) {
+        console.log('innerHTML', innerHTML)
+        //innerHTML[0].innerHTML  = 'TEST!!!'
+    }
 });
 
 let flag = {

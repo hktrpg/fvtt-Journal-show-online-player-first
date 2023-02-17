@@ -2,7 +2,7 @@
     "id": "fvtt-Journal-show-online-player-first",
     "title": "Journel show online player first",
     "description": "Tiny module. Show online player first in Journal.",
-    "version": "3.0",
+    "version": "1.0",
     "compatibility": {
         "minimum": "10",
         "verified": "10"
@@ -14,9 +14,11 @@
             "flags": {}
         }
     ],
-    "esmodules": [],
+    "esmodules": [
+        "index.js"
+    ],
     "scripts": [
-        "./index.js"
+        "index.js"
     ],
     "styles": [],
     "packs": [],
