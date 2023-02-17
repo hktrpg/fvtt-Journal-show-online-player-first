@@ -1,25 +1,50 @@
 {
-  "name": "translate_entries_5e_zh_tw",
-  "title": "5e 翻譯工具",
-  "description": "自動把5e角色卡內容 翻譯成中文",
-  "author": "Sad, HKTRPG",
-  "authors": [],
-  "url": "https://github.com/hktrpg/foundryVTT-translate-entries-5e-zh-tw",
-  "flags": {},
-  "version": "0.0.1",
-  "minimumCoreVersion": "0.8.9",
-  "compatibleCoreVersion": "0.8.9",
-  "scripts": [
-    "./index.js"
-  ],
-  "esmodules": [],
-  "styles": [],
-  "packs": [],
-  "system": [],
-  "dependencies": [],
-  "socket": true,
-  "manifest": "https://raw.githubusercontent.com/hktrpg/foundryVTT-translate-entries-5e-zh-tw/main/module.json",
-  "download": "https://github.com/hktrpg/foundryVTT-translate-entries-5e-zh-tw/releases/latest/download/module.zip",
-  "protected": false,
-  "coreTranslation": false
+    "title": "Translation: 中文 [PF2e（合集包）]",
+    "description": "PF2e 系统的合集包翻译，需要 Babele。",
+    "authors": [
+        {
+            "name": "FVTT-CN",
+            "email": "fvtt-cn@dickytwister.org",
+            "flags": {}
+        }
+    ],
+    "compatibility": {
+        "minimum": "10",
+        "verified": "10"
+    },
+    "scripts": [
+        "npc/NPCTranslator.js"
+    ],
+    "esmodules": [
+        "babele.js"
+    ],
+    "changelog": "https://github.com/fvtt-cn/pf2e_compendium_chn/releases/tag/1.3.0",
+    "version": "1.3.0",
+    "url": "https://github.com/fvtt-cn/pf2e_compendium_chn",
+    "manifest": "https://github.com/fvtt-cn/pf2e_compendium_chn/releases/latest/download/module.json",
+    "download": "https://github.com/fvtt-cn/pf2e_compendium_chn/releases/download/1.3.0/pf2e_compendium_chn.zip",
+    "id": "pf2e_compendium_chn",
+    "relationships": {
+        "requires": [
+            {
+                "id": "babele",
+                "type": "module",
+                "manifest": "https://gitlab.com/riccisi/foundryvtt-babele/raw/master/module/module.json",
+                "compatibility": {}
+            },
+            {
+                "id": "lib-wrapper",
+                "type": "module",
+                "manifest": "https://github.com/ruipin/fvtt-lib-wrapper/releases/latest/download/module.json",
+                "compatibility": {}
+            }
+        ],
+        "systems": [
+            {
+                "id": "pf2e",
+                "type": "system",
+                "compatibility": {}
+            }
+        ]
+    }
 }
