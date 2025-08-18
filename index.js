@@ -3,21 +3,7 @@ Hooks.once("init", () => {
     console.log("Show Online player First 1.0 | Initializing");
 });
 
-Hooks.on('renderDialog', () => {
-    try {
-        const users = game.users.filter(user => user.active);
-        let playerNames = users.map(u => u.name)
-        // v13 container
-        sortLabel('.users', playerNames)
-        // v12 container
-        sortLabel('.form-fields', playerNames)
-    } catch (error) {
-        console.log('error', error)
-    }
-});
-
-// v13 renamed hook; support both without version checks
-Hooks.on('renderShowToPlayersDialog', () => {
+Hooks.on(['renderDialog', 'renderShowToPlayersDialog'], () => {
     try {
         const users = game.users.filter(user => user.active);
         let playerNames = users.map(u => u.name)
@@ -31,7 +17,7 @@ Hooks.on('renderShowToPlayersDialog', () => {
 });
 
 
-Hooks.on('renderApplication', () => {
+Hooks.on(['renderApplication', 'renderHandlebarsApplication','renderFormApplication '], () => {
     try {
         const users = game.users.filter(user => user.active);
         let playerNames = users.map(u => u.name)
@@ -43,15 +29,7 @@ Hooks.on('renderApplication', () => {
 });
 
 // v13 renamed hook; support both without version checks
-Hooks.on('renderHandlebarsApplication', () => {
-    try {
-        const users = game.users.filter(user => user.active);
-        let playerNames = users.map(u => u.name)
-        reorderFormGroups(playerNames);
-    } catch (error) {
-        // console.log('error', error)
-    }
-});
+
 
 function reorderFormGroups(playerNames) {
 	// Target ownership configuration forms (v12 + v13)
