@@ -42,22 +42,64 @@ Hooks.on('renderApplication', () => {
     }
 });
 
-function reorderFormGroups(players) {
-    const formGroups = document.querySelectorAll('.form-group');
-    if (!formGroups) return;
-    // 找到 players 包含的 form-group
-    const selectedFormGroups = [];
-    formGroups.forEach((formGroup) => {
-        const label = formGroup.querySelector('label');
-        if (label && players.includes(label.textContent)) {
-            selectedFormGroups.push(formGroup);
-        }
-    });
+// v13 renamed hook; support both without version checks
+Hooks.on('renderHandlebarsApplication', () => {
+    try {
+        const users = game.users.filter(user => user.active);
+        let playerNames = users.map(u => u.name)
+        reorderFormGroups(playerNames);
+    } catch (error) {
+        // console.log('error', error)
+    }
+});
 
-    // 把選中的 form-group 移动到 hidden 的后面
-    const hiddenFormGroup = document.querySelector('.form-group.hidden');
-    selectedFormGroups.forEach((formGroup) => {
-        hiddenFormGroup.parentNode.insertBefore(formGroup, hiddenFormGroup.nextSibling);
+function reorderFormGroups(playerNames) {
+    // Target ownership configuration forms (v12/v13)
+    const ownershipForms = document.querySelectorAll('form.document-ownership');
+    if (!ownershipForms || ownershipForms.length === 0) return;
+
+    ownershipForms.forEach((form) => {
+        // Preferred container in v13
+        const listContainer = form.querySelector('menu.standard-form') || form.querySelector('menu.standard-form.scrollable') || form;
+        if (!listContainer) return;
+
+        // Work only with direct children that are form groups
+        const items = Array.from(listContainer.children).filter(el => el.classList && el.classList.contains('form-group'));
+        if (items.length === 0) return;
+
+        // Identify fixed entries: All Players row and GM row(s)
+        const isFixed = (el) => {
+            if (el.classList.contains('gm')) return true;
+            const lbl = el.querySelector('label');
+            if (!lbl) return false;
+            const text = lbl.textContent.trim().toLowerCase();
+            return text.includes('所有玩家') || text.includes('all players');
+        };
+
+        const fixedItems = items.filter(isFixed);
+        const nonFixedItems = items.filter(el => !isFixed(el));
+
+        // Build map of player name -> element for non-fixed items
+        const nameToItem = new Map();
+        for (const el of nonFixedItems) {
+            const lbl = el.querySelector('label');
+            if (!lbl) continue;
+            const name = lbl.textContent.trim();
+            if (playerNames.includes(name)) nameToItem.set(name, el);
+        }
+
+        // Insert online players immediately after the fixed items, preserving playerNames order
+        const anchor = nonFixedItems.find(el => !nameToItem.has(el.querySelector('label')?.textContent.trim())) || nonFixedItems[0] || null;
+        for (const name of playerNames) {
+            const el = nameToItem.get(name);
+            if (el && listContainer.contains(el)) {
+                if (anchor) {
+                    listContainer.insertBefore(el, anchor);
+                } else {
+                    listContainer.appendChild(el);
+                }
+            }
+        }
     });
 }
 
