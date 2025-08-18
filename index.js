@@ -54,53 +54,66 @@ Hooks.on('renderHandlebarsApplication', () => {
 });
 
 function reorderFormGroups(playerNames) {
-    // Target ownership configuration forms (v12/v13)
-    const ownershipForms = document.querySelectorAll('form.document-ownership');
-    if (!ownershipForms || ownershipForms.length === 0) return;
+	// Target ownership configuration forms (v12 + v13)
+	const v13Forms = Array.from(document.querySelectorAll('form.document-ownership'));
+	const v12Forms = Array.from(document.querySelectorAll('form#permission-control'));
+	const ownershipForms = [...v13Forms, ...v12Forms];
+	if (ownershipForms.length === 0) return;
 
-    ownershipForms.forEach((form) => {
-        // Preferred container in v13
-        const listContainer = form.querySelector('menu.standard-form') || form.querySelector('menu.standard-form.scrollable') || form;
-        if (!listContainer) return;
+	ownershipForms.forEach((form) => {
+		// v13 uses <menu.standard-form>, v12 uses the <form> itself
+		const listContainer = form.querySelector('menu.standard-form, menu.standard-form.scrollable') || form;
+		if (!listContainer) return;
 
-        // Work only with direct children that are form groups
-        const items = Array.from(listContainer.children).filter(el => el.classList && el.classList.contains('form-group'));
-        if (items.length === 0) return;
+		// Only direct children that are form groups
+		const items = Array.from(listContainer.children).filter(el => el.classList && el.classList.contains('form-group'));
+		if (items.length === 0) return;
 
-        // Identify fixed entries: All Players row and GM row(s)
-        const isFixed = (el) => {
-            if (el.classList.contains('gm')) return true;
-            const lbl = el.querySelector('label');
-            if (!lbl) return false;
-            const text = lbl.textContent.trim().toLowerCase();
-            return text.includes('所有玩家') || text.includes('all players');
-        };
+		// Fixed rows: GM(s), All Players row, and the GM toggle row (v12)
+		const isFixed = (el) => {
+			if (el.classList.contains('gm')) return true;
+			const lbl = el.querySelector('label');
+			const text = (lbl ? lbl.textContent : '').trim().toLowerCase();
+			if (!lbl && !el.querySelector('label')) return false;
+			if (text.includes('所有玩家') || text.includes('all players')) return true;
+			// GM visibility toggle in v12
+			if (text.includes('顯示gm用戶') || text.includes('show gm')) return true;
+			if (el.querySelector('#show-gm-toggle') || el.querySelector('[data-show-gm-toggle]')) return true;
+			return false;
+		};
 
-        const fixedItems = items.filter(isFixed);
-        const nonFixedItems = items.filter(el => !isFixed(el));
+		const fixedItems = items.filter(isFixed);
+		const nonFixedItems = items.filter(el => !isFixed(el));
 
-        // Build map of player name -> element for non-fixed items
-        const nameToItem = new Map();
-        for (const el of nonFixedItems) {
-            const lbl = el.querySelector('label');
-            if (!lbl) continue;
-            const name = lbl.textContent.trim();
-            if (playerNames.includes(name)) nameToItem.set(name, el);
-        }
+		// Map player name -> element for non-fixed items
+		const nameToItem = new Map();
+		for (const el of nonFixedItems) {
+			const lbl = el.querySelector('label');
+			if (!lbl) continue;
+			const name = lbl.textContent.trim();
+			if (playerNames.includes(name)) nameToItem.set(name, el);
+		}
 
-        // Insert online players immediately after the fixed items, preserving playerNames order
-        const anchor = nonFixedItems.find(el => !nameToItem.has(el.querySelector('label')?.textContent.trim())) || nonFixedItems[0] || null;
-        for (const name of playerNames) {
-            const el = nameToItem.get(name);
-            if (el && listContainer.contains(el)) {
-                if (anchor) {
-                    listContainer.insertBefore(el, anchor);
-                } else {
-                    listContainer.appendChild(el);
-                }
-            }
-        }
-    });
+		// Insert online players immediately after the last fixed item
+		let lastFixed = fixedItems.length > 0 ? fixedItems[fixedItems.length - 1] : null;
+		for (const name of playerNames) {
+			const el = nameToItem.get(name);
+			if (el && listContainer.contains(el)) {
+				if (lastFixed && lastFixed.parentElement === listContainer) {
+					if (lastFixed.nextSibling) {
+						listContainer.insertBefore(el, lastFixed.nextSibling);
+					} else {
+						listContainer.appendChild(el);
+					}
+					lastFixed = el; // keep online players contiguous in given order
+				} else {
+					// No fixed anchor; just move to top of the container
+					listContainer.insertBefore(el, listContainer.firstChild);
+					lastFixed = el;
+				}
+			}
+		}
+	});
 }
 
 function sortLabel(className, playerNames) {
