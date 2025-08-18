@@ -1,14 +1,14 @@
-name: Create Release
+name: Auto Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       version:
         description: 'Version to release (e.g., 1.1.1)'
-        required: true
+        required: false
         type: string
 
 jobs:
@@ -18,43 +18,45 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
       
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         
-    - name: Get version from module.json
+    - name: Get current version from module.json
       id: get-version
       run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+        CURRENT_VERSION=$(node -p "require('./module.json').version")
+        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+        
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
           echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
         else
-          # Extract version from tag (remove 'v' prefix)
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
         fi
         
-    - name: Validate version in module.json
+    - name: Check if release already exists
+      id: check-release
       run: |
-        MODULE_VERSION=$(node -p "require('./module.json').version")
-        RELEASE_VERSION="${{ steps.get-version.outputs.version }}"
-        
-        if [ "$MODULE_VERSION" != "$RELEASE_VERSION" ]; then
-          echo "Error: Version mismatch!"
-          echo "module.json version: $MODULE_VERSION"
-          echo "Release version: $RELEASE_VERSION"
-          exit 1
+        VERSION="${{ steps.get-version.outputs.version }}"
+        if gh release view "v$VERSION" >/dev/null 2>&1; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "Release v$VERSION already exists, skipping..."
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
         fi
-        
-        echo "Version validation passed: $MODULE_VERSION"
         
     - name: Create module.zip
+      if: steps.check-release.outputs.exists != 'true'
       run: |
         # Create zip file with all necessary files
-        zip -r module.zip . -x "*.git*" "*.github*" "node_modules/*" "*.zip"
+        zip -r module.zip . -x "*.git*" "*.github*" "node_modules/*" "*.zip" "package*.json" "scripts/*"
         
     - name: Create Release
+      if: steps.check-release.outputs.exists != 'true'
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ steps.get-version.outputs.version }}
@@ -75,8 +77,31 @@ jobs:
           - `index.js` - Main module code
           - `README.md` - Documentation
           - `LICENSE` - License file
+          
+          ### Auto-generated release
+          This release was automatically created by GitHub Actions.
         files: module.zip
         draft: false
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Update module.json download URL
+      if: steps.check-release.outputs.exists != 'true'
+      run: |
+        # Update the download URL in module.json to point to the latest release
+        node -e "
+        const fs = require('fs');
+        const moduleData = JSON.parse(fs.readFileSync('module.json', 'utf8'));
+        moduleData.download = 'https://github.com/${{ github.repository }}/releases/latest/download/module.zip';
+        fs.writeFileSync('module.json', JSON.stringify(moduleData, null, 4));
+        "
+        
+    - name: Commit updated module.json
+      if: steps.check-release.outputs.exists != 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add module.json
+        git commit -m "Update download URL to latest release" || echo "No changes to commit"
+        git push
