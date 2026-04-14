@@ -17,11 +17,23 @@ Hooks.on(['renderDialog', 'renderShowToPlayersDialog'], () => {
 });
 
 
-Hooks.on(['renderApplication', 'renderHandlebarsApplication','renderFormApplication '], () => {
+// Application V1 hooks (older Foundry): FormApplication / generic Application
+// v14+: Document ownership uses DocumentOwnershipConfig (ApplicationV2) — see renderDocumentOwnershipConfig
+Hooks.on(['renderApplication', 'renderHandlebarsApplication', 'renderFormApplication'], () => {
     try {
         const users = game.users.filter(user => user.active);
         let playerNames = users.map(u => u.name)
         //permission-control
+        reorderFormGroups(playerNames);
+    } catch (error) {
+        // console.log('error', error)
+    }
+});
+
+Hooks.on('renderDocumentOwnershipConfig', () => {
+    try {
+        const users = game.users.filter(user => user.active);
+        const playerNames = users.map(u => u.name);
         reorderFormGroups(playerNames);
     } catch (error) {
         // console.log('error', error)
